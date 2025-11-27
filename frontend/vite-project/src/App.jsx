@@ -160,8 +160,10 @@ function App() {
       }
 
       mediaRecorder.onstop = async () => {
-        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/wav' })
-        await processAudio(audioBlob)
+        if (audioChunksRef.current.length > 0) {
+          const audioBlob = new Blob(audioChunksRef.current, { type: mediaRecorder.mimeType || 'audio/webm' })
+          await processAudio(audioBlob)
+        }
         stream.getTracks().forEach(track => track.stop())
       }
 
@@ -185,12 +187,19 @@ function App() {
   }
 
   const processAudio = async (audioBlob) => {
+    if (!audioBlob || audioBlob.size === 0) {
+      setError('No audio data to process')
+      setIsProcessing(false)
+      return
+    }
+
     setIsProcessing(true)
     const startTime = Date.now()
 
     try {
       const formData = new FormData()
-      formData.append('audio', audioBlob, 'recording.wav')
+      const fileExtension = audioBlob.type.includes('webm') ? 'webm' : audioBlob.type.includes('ogg') ? 'ogg' : 'wav'
+      formData.append('audio', audioBlob, `recording.${fileExtension}`)
       formData.append('tone', tone)
 
       const response = await fetch(`${API_BASE_URL}/process/full`, {
@@ -199,10 +208,17 @@ function App() {
       })
 
       if (!response.ok) {
-        throw new Error(`Server error: ${response.statusText}`)
+        const errorText = await response.text().catch(() => response.statusText)
+        throw new Error(`Server error: ${response.status} - ${errorText}`)
       }
 
-      const data = await response.json()
+      let data
+      try {
+        data = await response.json()
+      } catch (parseError) {
+        throw new Error('Failed to parse server response')
+      }
+
       const endTime = Date.now()
       const totalLatency = endTime - startTime
 
@@ -321,11 +337,11 @@ function App() {
                   ? 'filter drop-shadow-[0_0_15px_rgba(147,51,234,0.6)]' 
                   : 'filter drop-shadow-[0_0_15px_rgba(99,102,241,0.4)]'
               }`}>🎤</span>
-              <span className="text-gradient bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent hover:animate-wiggle transition-all duration-300 cursor-default inline-block hover:scale-105 drop-shadow-lg">
+              <span className="text-gradient bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent hover:animate-bulge transition-all duration-300 cursor-default inline-block drop-shadow-lg">
                 Intelligent Speech Dictation Engine
               </span>
             </h1>
-            <p className={`animate-slide-down opacity-100 animate-wobble hover:animate-wobble-intense hover:scale-110 hover:font-semibold hover:drop-shadow-2xl active:scale-105 transition-all duration-500 ease-in-out cursor-pointer select-none font-medium drop-shadow-md ${
+            <p className={`animate-slide-down opacity-100 hover:animate-bulge hover:scale-110 hover:font-semibold hover:drop-shadow-2xl active:scale-105 transition-all duration-500 ease-in-out cursor-pointer select-none font-medium drop-shadow-md ${
               isScrolled ? 'text-sm opacity-80' : 'text-lg opacity-100'
             } ${
               darkMode
@@ -346,40 +362,16 @@ function App() {
             ? 'bg-gray-800/80 backdrop-blur-lg border border-gray-700/50'
             : 'glass border border-gray-200/50'
         }`}>
-          <div className="flex items-center gap-4">
-            <label htmlFor="tone-select" className={`font-semibold transition-colors duration-500 ${
-              darkMode ? 'text-gray-300' : 'text-gray-700'
-            }`}>
-              Tone/Style:
-            </label>
-            <select
-              id="tone-select"
-              value={tone}
-              onChange={(e) => setTone(e.target.value)}
-              disabled={isRecording || isProcessing}
-              className={`px-4 py-2.5 border-2 rounded-lg font-medium cursor-pointer transition-all duration-300 ease-in-out hover:border-indigo-400 hover:shadow-md hover:scale-105 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:shadow-none ${
-                darkMode
-                  ? 'border-gray-600 text-gray-200 bg-gray-700/50'
-                  : 'border-gray-200 text-gray-700 bg-white'
-              }`}
-            >
-              {tones.map(t => (
-                <option key={t.value} value={t.value}>{t.label}</option>
-              ))}
-            </select>
-          </div>
+          {/* Left Side - Heading */}
+          <h2 className={`text-xl sm:text-2xl font-bold transition-all duration-300 ease-out cursor-default inline-block transform origin-left ${
+            darkMode ? 'text-gray-200' : 'text-gray-800'
+          } hover:scale-110 hover:tracking-widest hover:drop-shadow-2xl hover:brightness-110 hover:-translate-y-1`}>
+            Speech Dictation
+          </h2>
 
-          <div className="flex gap-3">
-            {!isRecording ? (
-              <button
-                onClick={startRecording}
-                disabled={isProcessing}
-                className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl hover:shadow-indigo-500/50 transform hover:scale-110 hover:-translate-y-1 active:scale-95 transition-all duration-300 ease-in-out flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none hover:brightness-110"
-              >
-                <span className="text-xl transition-transform duration-300 hover:rotate-12">🎙️</span>
-                <span className="transition-all duration-300">Start Recording</span>
-              </button>
-            ) : (
+          {/* Right Side - Controls */}
+          <div className="flex flex-wrap items-center gap-3 justify-end w-full sm:w-auto">
+            {isRecording && (
               <button
                 onClick={stopRecording}
                 className="px-6 py-3 bg-gradient-to-r from-pink-500 to-red-500 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl hover:shadow-pink-500/50 transform hover:scale-110 hover:-translate-y-1 active:scale-95 transition-all duration-300 ease-in-out flex items-center gap-2 animate-pulse hover:brightness-110"
@@ -388,6 +380,29 @@ function App() {
                 <span className="transition-all duration-300">Stop Recording ({formatTime(recordingTime)})</span>
               </button>
             )}
+
+            <div className="flex items-center gap-2">
+              <label htmlFor="tone-select" className={`font-semibold transition-colors duration-500 whitespace-nowrap ${
+                darkMode ? 'text-gray-300' : 'text-gray-700'
+              }`}>
+                Tone/Style:
+              </label>
+              <select
+                id="tone-select"
+                value={tone}
+                onChange={(e) => setTone(e.target.value)}
+                disabled={isRecording || isProcessing}
+                className={`px-4 py-2.5 border-2 rounded-lg font-medium cursor-pointer transition-all duration-300 ease-in-out hover:border-indigo-400 hover:shadow-md hover:scale-105 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:shadow-none ${
+                  darkMode
+                    ? 'border-gray-600 text-gray-200 bg-gray-700/50'
+                    : 'border-gray-200 text-gray-700 bg-white'
+                }`}
+              >
+                {tones.map(t => (
+                  <option key={t.value} value={t.value}>{t.label}</option>
+                ))}
+              </select>
+            </div>
 
             <button
               onClick={clearAll}
@@ -492,7 +507,7 @@ function App() {
                           ? 'bg-red-900/30 text-red-300 border-red-700/50'
                           : 'bg-red-100 text-red-700 border-red-200'
                       }`}>
-                        {rawTranscript.split(/\s+/).length} words
+                        {rawTranscript && rawTranscript.trim() ? rawTranscript.trim().split(/\s+/).length : 0} words
                       </span>
                       <span className={`px-2 py-1 text-xs font-semibold rounded-md border transition-all duration-500 ${
                         darkMode
@@ -618,7 +633,7 @@ function App() {
                           ? 'bg-green-900/30 text-green-300 border-green-700/50'
                           : 'bg-green-100 text-green-700 border-green-200'
                       }`}>
-                        {processedText.split(/\s+/).length} words
+                        {processedText && processedText.trim() ? processedText.trim().split(/\s+/).length : 0} words
                       </span>
                       <span className={`px-2 py-1 text-xs font-semibold rounded-md border transition-all duration-500 ${
                         darkMode
@@ -701,7 +716,7 @@ function App() {
               <div className={`text-3xl font-bold transition-all duration-500 hover:scale-110 ${
                 darkMode ? 'text-purple-400' : 'text-purple-600'
               }`}>
-                {rawTranscript.length > 0
+                {rawTranscript.length > 0 && processedText.length >= 0
                   ? `${Math.round((1 - processedText.length / rawTranscript.length) * 100)}%`
                   : '0%'}
               </div>
