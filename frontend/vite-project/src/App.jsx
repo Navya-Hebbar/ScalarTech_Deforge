@@ -325,18 +325,11 @@ function App() {
               ? 'shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] border border-white/5'
               : 'shadow-[0_8px_32px_0_rgba(31,38,135,0.2)] border border-white/10'
           }`}>
-            <h1 className={`font-bold mb-2 flex items-center justify-center gap-3 transition-all duration-500 ease-in-out ${
+            <h1 className={`font-bold mb-2 flex items-center justify-center transition-all duration-500 ease-in-out ${
               isScrolled 
                 ? 'text-2xl sm:text-3xl mb-1 scale-95' 
                 : 'text-4xl sm:text-5xl scale-100'
             }`}>
-              <span className={`drop-shadow-2xl animate-bounce-slow transition-all duration-500 ${
-                isScrolled ? 'text-3xl' : 'text-5xl'
-              } ${
-                darkMode 
-                  ? 'filter drop-shadow-[0_0_15px_rgba(147,51,234,0.6)]' 
-                  : 'filter drop-shadow-[0_0_15px_rgba(99,102,241,0.4)]'
-              }`}>🎤</span>
               <span className="text-gradient bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent hover:animate-bulge transition-all duration-300 cursor-default inline-block drop-shadow-lg">
                 Intelligent Speech Dictation Engine
               </span>
@@ -460,11 +453,11 @@ function App() {
         )}
 
         {/* Comparison Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto_1fr] gap-6 items-start animate-fade-in">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto_1fr] gap-4 lg:gap-8 items-center lg:items-start animate-fade-in">
           {/* Raw Transcript Panel */}
           <div className="relative group">
             <div className="absolute -inset-0.5 bg-gradient-to-r from-red-500 via-pink-500 to-orange-500 rounded-2xl blur opacity-30 group-hover:opacity-50 transition duration-300"></div>
-            <div className={`relative rounded-2xl shadow-2xl overflow-hidden flex flex-col min-h-[450px] animate-slide-up transition-all duration-500 ease-in-out ${
+            <div className={`relative rounded-2xl shadow-2xl overflow-hidden flex flex-col min-h-[500px] lg:min-h-[550px] animate-slide-up transition-all duration-500 ease-in-out ${
               darkMode
                 ? 'bg-gray-800/90 backdrop-blur-lg border border-red-500/30'
                 : 'glass border border-red-200/50'
@@ -544,26 +537,80 @@ function App() {
             </div>
           </div>
 
-          {/* Arrow Indicator */}
-          <div className="hidden lg:flex items-center justify-center">
+          {/* Circular Microphone Button */}
+          <div className="flex items-center justify-center lg:items-start lg:justify-center lg:pt-[160px] py-6">
             <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-red-500 to-green-500 rounded-full blur-xl opacity-20 animate-pulse"></div>
-              <div className={`relative text-6xl drop-shadow-2xl animate-pulse-slow transform hover:scale-125 transition-all duration-500 filter ${
-                darkMode
-                  ? 'text-gray-300 drop-shadow-[0_0_20px_rgba(147,51,234,0.5)]'
-                  : 'text-gray-700 drop-shadow-[0_0_20px_rgba(0,0,0,0.3)]'
-              }`}>
-                →
-              </div>
-            </div>
-          </div>
-          <div className="lg:hidden flex items-center justify-center py-2">
-            <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-red-500 to-green-500 rounded-full blur-xl opacity-20 animate-pulse"></div>
-              <div className={`relative text-4xl drop-shadow-2xl animate-pulse-slow transform rotate-90 transition-all duration-500 ${
-                darkMode ? 'text-gray-300' : 'text-gray-700'
-              }`}>
-                ↓
+              {/* Outer glow rings */}
+              {isRecording && (
+                <>
+                  <div className="absolute inset-0 bg-gradient-to-r from-pink-500 via-red-500 to-orange-500 rounded-full blur-3xl opacity-40 animate-pulse scale-150 -z-10"></div>
+                  <div className="absolute inset-0 bg-gradient-to-r from-pink-500 via-red-500 to-orange-500 rounded-full blur-2xl opacity-30 animate-pulse scale-125 -z-10" style={{ animationDelay: '0.2s' }}></div>
+                </>
+              )}
+              
+              {/* Button Container */}
+              <button
+                onClick={isRecording ? stopRecording : startRecording}
+                disabled={isProcessing}
+                className={`relative w-32 h-32 lg:w-44 lg:h-44 rounded-full flex items-center justify-center transition-all duration-500 ease-in-out transform hover:scale-105 active:scale-95 focus:outline-none focus:ring-4 focus:ring-offset-4 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 shadow-2xl ${
+                  isRecording
+                    ? 'bg-gradient-to-br from-red-500 via-pink-500 to-orange-500 hover:from-red-600 hover:via-pink-600 hover:to-orange-600 focus:ring-red-400'
+                    : 'bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 hover:from-indigo-600 hover:via-purple-600 hover:to-pink-600 focus:ring-indigo-400'
+                } ${
+                  darkMode ? 'shadow-purple-500/50' : 'shadow-indigo-500/50'
+                }`}
+                aria-label={isRecording ? 'Stop recording' : 'Start recording'}
+              >
+                {/* Inner circle with backdrop blur */}
+                <div className={`absolute inset-3 rounded-full backdrop-blur-sm ${
+                  darkMode ? 'bg-white/10' : 'bg-white/20'
+                }`}></div>
+                
+                {/* Microphone Icon */}
+                <div className="relative z-10 flex items-center justify-center">
+                  {isRecording ? (
+                    <div className="relative">
+                      {/* Pulsing dot */}
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="w-4 h-4 lg:w-5 lg:h-5 bg-white rounded-full animate-ping"></div>
+                      </div>
+                      {/* Stop icon */}
+                      <div className="w-12 h-12 lg:w-16 lg:h-16 bg-white rounded-lg flex items-center justify-center shadow-lg">
+                        <div className="w-6 h-6 lg:w-8 lg:h-8 bg-red-500 rounded-md"></div>
+                      </div>
+                    </div>
+                  ) : (
+                    <svg 
+                      className={`w-14 h-14 lg:w-20 lg:h-20 text-white drop-shadow-lg transition-transform duration-300 ${
+                        isProcessing ? 'animate-pulse' : ''
+                      }`}
+                      fill="none" 
+                      stroke="currentColor" 
+                      viewBox="0 0 24 24"
+                    >
+                      <path 
+                        strokeLinecap="round" 
+                        strokeLinejoin="round" 
+                        strokeWidth={2.5} 
+                        d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" 
+                      />
+                    </svg>
+                  )}
+                </div>
+                
+                {/* Recording indicator ring */}
+                {isRecording && (
+                  <div className="absolute inset-0 rounded-full border-4 lg:border-[6px] border-white/30 animate-spin" style={{ animationDuration: '2s' }}></div>
+                )}
+              </button>
+              
+              {/* Status text below button (mobile only) */}
+              <div className="lg:hidden mt-4 text-center">
+                <p className={`text-xs font-semibold transition-colors duration-500 ${
+                  darkMode ? 'text-gray-300' : 'text-gray-700'
+                }`}>
+                  {isRecording ? `Recording... ${formatTime(recordingTime)}` : 'Tap to Record'}
+                </p>
               </div>
             </div>
           </div>
@@ -571,7 +618,7 @@ function App() {
           {/* Processed Text Panel */}
           <div className="relative group">
             <div className="absolute -inset-0.5 bg-gradient-to-r from-green-500 via-emerald-500 to-teal-500 rounded-2xl blur opacity-30 group-hover:opacity-50 transition duration-300"></div>
-            <div className={`relative rounded-2xl shadow-2xl overflow-hidden flex flex-col min-h-[450px] animate-slide-up transition-all duration-500 ease-in-out ${
+            <div className={`relative rounded-2xl shadow-2xl overflow-hidden flex flex-col min-h-[500px] lg:min-h-[550px] animate-slide-up transition-all duration-500 ease-in-out ${
               darkMode
                 ? 'bg-gray-800/90 backdrop-blur-lg border border-green-500/30'
                 : 'glass border border-green-200/50'
@@ -580,7 +627,7 @@ function App() {
               <div className="relative bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600 text-white p-5 flex justify-between items-center shadow-lg">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-lg bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                    <span className="text-xl">✨</span>
+                    <span className="text-xl">📝</span>
                   </div>
       <div>
                     <h2 className="text-xl font-bold tracking-tight">Processed Text</h2>
@@ -661,7 +708,7 @@ function App() {
                 ) : (
                   <div className="flex flex-col items-center justify-center h-full py-16">
                     <div className="w-20 h-20 rounded-full bg-gradient-to-br from-green-100 to-emerald-100 flex items-center justify-center mb-4 shadow-inner">
-                      <span className="text-4xl opacity-50">✨</span>
+                      <span className="text-4xl opacity-50">📝</span>
                     </div>
                     <p className={`italic text-center font-medium transition-colors duration-500 ${
                       darkMode ? 'text-gray-400' : 'text-gray-500'
