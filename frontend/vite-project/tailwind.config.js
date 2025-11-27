@@ -16,12 +16,8 @@ export default {
         'scale-in': 'scaleIn 0.3s ease-out',
         'shimmer': 'shimmer 2s linear infinite',
         'gradient': 'gradient 15s ease infinite',
-        'wiggle': 'wiggle 0.5s ease-in-out',
-        'wiggle-slow': 'wiggle 1s ease-in-out infinite',
-        'wobble': 'wobble 2s ease-in-out infinite',
-        'wobble-fast': 'wobble 1s ease-in-out infinite',
-        'wobble-intense': 'wobble-intense 0.8s ease-in-out infinite',
         'lift': 'lift 0.3s ease-out',
+        'bulge': 'bulge 0.4s ease-out',
       },
       keyframes: {
         fadeIn: {
@@ -48,25 +44,14 @@ export default {
           '0%, 100%': { backgroundPosition: '0% 50%' },
           '50%': { backgroundPosition: '100% 50%' },
         },
-        wiggle: {
-          '0%, 100%': { transform: 'rotate(-3deg)' },
-          '50%': { transform: 'rotate(3deg)' },
-        },
-        wobble: {
-          '0%, 100%': { transform: 'translateX(0) translateY(0) rotate(0deg)' },
-          '25%': { transform: 'translateX(-2px) translateY(1px) rotate(-0.5deg)' },
-          '50%': { transform: 'translateX(2px) translateY(-1px) rotate(0.5deg)' },
-          '75%': { transform: 'translateX(-1px) translateY(1px) rotate(-0.3deg)' },
-        },
-        'wobble-intense': {
-          '0%, 100%': { transform: 'translateX(0) translateY(0) rotate(0deg) scale(1)' },
-          '25%': { transform: 'translateX(-4px) translateY(2px) rotate(-1deg) scale(1.05)' },
-          '50%': { transform: 'translateX(4px) translateY(-2px) rotate(1deg) scale(1.05)' },
-          '75%': { transform: 'translateX(-2px) translateY(2px) rotate(-0.8deg) scale(1.03)' },
-        },
         lift: {
           '0%': { transform: 'translateY(0) scale(1)' },
           '100%': { transform: 'translateY(-4px) scale(1.05)' },
+        },
+        bulge: {
+          '0%': { transform: 'scale(1)', letterSpacing: '0' },
+          '50%': { transform: 'scale(1.08)', letterSpacing: '1.5px' },
+          '100%': { transform: 'scale(1.05)', letterSpacing: '0.5px' },
         },
       },
       backgroundImage: {
